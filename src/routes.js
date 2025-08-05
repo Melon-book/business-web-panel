@@ -4,6 +4,17 @@ const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
+
+
+// Feature pages
+const Appointments = React.lazy(() => import('./features/appointments/pages/AppointmentsList'))
+const Schedule = React.lazy(() => import('./features/schedule/pages/ScheduleView'))
+const Staff = React.lazy(() => import('./features/staff/pages/StaffList'))
+const Clients = React.lazy(() => import('./features/clients/pages/ClientsList'))
+const Services = React.lazy(() => import('./features/services/pages/ServicesList'))
+const Analytics = React.lazy(() => import('./features/analytics/pages/AnalyticsDashboard'))
+const Settings = React.lazy(() => import('./features/settings/pages/BusinessSettings'))
+
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
 const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
@@ -54,6 +65,16 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/appointments', name: 'Appointments', component: Appointments },
+  { path: '/schedule', name: 'Schedule', component: Schedule },
+  { path: '/staff', name: 'Staff', component: Staff },
+  { path: '/clients', name: 'Clients', component: Clients },
+  { path: '/services', name: 'Services', component: Services },
+  { path: '/analytics', name: 'Analytics', component: Analytics },
+  { path: '/settings', name: 'Settings', component: Settings },
+
+
+
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },

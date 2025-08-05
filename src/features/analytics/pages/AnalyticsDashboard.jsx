@@ -7,7 +7,9 @@ const AnalyticsDashboard = () => {
       <CCardHeader>
         <strong>Analytics</strong>
       </CCardHeader>
-      <CCardBody>Analytics dashboard will be displayed here.</CCardBody>
+      <CCardBody>
+        Analytics dashboard will be displayed here.
+      </CCardBody>
     </CCard>
   )
 }
