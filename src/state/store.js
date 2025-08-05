@@ -5,7 +5,7 @@ const initialState = {
   sidebarUnfoldable: false
 }
 
-const uiSlice = (state = initialState, action) => {
+const uiReducer = (state = initialState, action) => {
   switch (action.type) {
     case 'set':
       return { ...state, ...action.payload }
@@ -15,7 +15,9 @@ const uiSlice = (state = initialState, action) => {
 }
 
 const store = configureStore({
-  reducer: uiSlice
+  reducer: {
+    ui: uiReducer
+  }
 })
 
 export default store

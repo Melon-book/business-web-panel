@@ -2,9 +2,7 @@ import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import store from './state/store'
-import { routes, publicRoutes } from './routes'
 import DefaultLayout from './layouts/DefaultLayout'
-import './scss/style.scss'
 
 const Loading = () => (
   <div className="pt-3 text-center">
@@ -14,9 +12,10 @@ const Loading = () => (
   </div>
 )
 
-const ProtectedRoute = ({ children, permission }) => {
-  return children
-}
+const Login = React.lazy(() => import('./pages/login/Login'))
+const Register = React.lazy(() => import('./pages/register/Register'))
+const Page404 = React.lazy(() => import('./pages/error/Page404'))
+const Page403 = React.lazy(() => import('./pages/error/Page403'))
 
 const App = () => {
   return (
@@ -24,36 +23,11 @@ const App = () => {
       <Router>
         <Suspense fallback={<Loading />}>
           <Routes>
-            {publicRoutes.map(({ path, element: Element, title }) => (
-              <Route
-                key={path}
-                path={path}
-                element={<Element />}
-              />
-            ))}
-
-            <Route
-              path="/*"
-              element={
-                <DefaultLayout>
-                  <Routes>
-                    {routes.map(({ path, element: Element, permission, title }) => (
-                      <Route
-                        key={path}
-                        path={path}
-                        element={
-                          <ProtectedRoute permission={permission}>
-                            <Element />
-                          </ProtectedRoute>
-                        }
-                      />
-                    ))}
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="*" element={<Navigate to="/error/404" replace />} />
-                  </Routes>
-                </DefaultLayout>
-              }
-            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/error/404" element={<Page404 />} />
+            <Route path="/error/403" element={<Page403 />} />
+            <Route path="/*" element={<DefaultLayout />} />
           </Routes>
         </Suspense>
       </Router>
