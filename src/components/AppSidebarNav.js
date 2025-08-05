@@ -1,26 +1,18 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
-import SimpleBar from 'simplebar-react'
-import 'simplebar-react/dist/simplebar.min.css'
-
-import { CBadge, CNavLink, CSidebarNav } from '@coreui/react'
+import { CBadge } from '@coreui/react'
 
 export const AppSidebarNav = ({ items }) => {
-  const navLink = (name, icon, badge, indent = false) => {
+  const location = useLocation()
+  const navLink = (name, icon, badge) => {
     return (
       <>
-        {icon
-          ? icon
-          : indent && (
-              <span className="nav-icon">
-                <span className="nav-icon-bullet"></span>
-              </span>
-            )}
+        {icon && icon}
         {name && name}
         {badge && (
-          <CBadge color={badge.color} className="ms-auto" size="sm">
+          <CBadge color={badge.color} className="ms-auto">
             {badge.text}
           </CBadge>
         )}
@@ -28,43 +20,45 @@ export const AppSidebarNav = ({ items }) => {
     )
   }
 
-  const navItem = (item, index, indent = false) => {
+  const navItem = (item, index) => {
     const { component, name, badge, icon, ...rest } = item
     const Component = component
     return (
-      <Component as="div" key={index}>
-        {rest.to || rest.href ? (
-          <CNavLink
-            {...(rest.to && { as: NavLink })}
-            {...(rest.href && { target: '_blank', rel: 'noopener noreferrer' })}
-            {...rest}
-          >
-            {navLink(name, icon, badge, indent)}
-          </CNavLink>
-        ) : (
-          navLink(name, icon, badge, indent)
-        )}
+      <Component
+        {...(rest.to &&
+          !rest.items && {
+            component: NavLink,
+          })}
+        key={index}
+        {...rest}
+      >
+        {navLink(name, icon, badge)}
       </Component>
     )
   }
-
   const navGroup = (item, index) => {
-    const { component, name, icon, items, to, ...rest } = item
+    const { component, name, icon, to, ...rest } = item
     const Component = component
     return (
-      <Component compact as="div" key={index} toggler={navLink(name, icon)} {...rest}>
-        {items?.map((item, index) =>
-          item.items ? navGroup(item, index) : navItem(item, index, true),
+      <Component
+        idx={String(index)}
+        key={index}
+        toggler={navLink(name, icon)}
+        visible={location.pathname.startsWith(to)}
+        {...rest}
+      >
+        {item.items?.map((item, index) =>
+          item.items ? navGroup(item, index) : navItem(item, index),
         )}
       </Component>
     )
   }
 
   return (
-    <CSidebarNav as={SimpleBar}>
+    <React.Fragment>
       {items &&
         items.map((item, index) => (item.items ? navGroup(item, index) : navItem(item, index)))}
-    </CSidebarNav>
+    </React.Fragment>
   )
 }
 
