@@ -4,9 +4,6 @@ const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'))
 const ColorsXXX = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
-// Feature pages
-const Widgets = React.lazy(() => import('./features/widgets/pages/Widgets'))
-const Sandbox = React.lazy(() => import('./features/sandbox/pages/Sandbox'))
 
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -54,10 +51,31 @@ const Modals = React.lazy(() => import('./views/notifications/modals/Modals'))
 const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 
 
+// Feature pages
+const Widgets = React.lazy(() => import('./features/widgets/pages/Widgets'))
+const Sandbox = React.lazy(() => import('./features/sandbox/pages/Sandbox'))
+const Appointments = React.lazy(() => import('./features/appointments/pages/Appointments'))
+const Schedule = React.lazy(() => import('./features/schedule/pages/ScheduleView'))
+const Staff = React.lazy(() => import('./features/staff/pages/StaffList'))
+const Clients = React.lazy(() => import('./features/clients/pages/ClientsList'))
+const Analytics = React.lazy(() => import('./features/analytics/pages/AnalyticsDashboard'))
+const Settings = React.lazy(() => import('./features/settings/pages/BusinessSettings'))
+const Services = React.lazy(() => import('./features/services/pages/ServicesList'))
+
+
 const routes = [
   { path: '/', exact: true, name: 'Home' },
+  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/widgets', name: 'Widgets', element: Widgets },
   { path: '/sandbox', name: 'Sandbox', element: Sandbox },
+  { path: '/appointments', name: 'Appointments', element: Appointments },
+  { path: '/schedule', name: 'Schedule', element: Schedule },
+  { path: '/staff', name: 'Staff', element: Staff },
+  { path: '/clients', name: 'Clients', element: Clients },
+  { path: '/analytics', name: 'Analytics', element: Analytics },
+  { path: '/settings', name: 'Settings', element: Settings },
+  { path: '/services', name: 'Services', element: Services },
+
 
 
 
