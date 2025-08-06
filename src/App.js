@@ -25,7 +25,9 @@ const loading = (
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
-  const storedTheme = useSelector((state) => state.theme)
+  // const { isColorModeSet, setColorMode } = useColorModes('melon-business-theme') // TODO .. is ok? or stupid
+
+  const storedTheme = useSelector((state) => state.ui.theme)
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.href.split('?')[1])
@@ -39,7 +41,7 @@ const App = () => {
     }
 
     setColorMode(storedTheme)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isColorModeSet, setColorMode, storedTheme])
 
   return (
     <HashRouter>
