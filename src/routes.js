@@ -65,16 +65,21 @@ const Services = React.lazy(() => import('./features/services/pages/ServicesList
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/widgets', name: 'Widgets', element: Widgets },
-  { path: '/sandbox', name: 'Sandbox', element: Sandbox },
-  { path: '/appointments', name: 'Appointments', element: Appointments },
-  { path: '/schedule', name: 'Schedule', element: Schedule },
-  { path: '/staff', name: 'Staff', element: Staff },
-  { path: '/clients', name: 'Clients', element: Clients },
-  { path: '/analytics', name: 'Analytics', element: Analytics },
-  { path: '/settings', name: 'Settings', element: Settings },
-  { path: '/services', name: 'Services', element: Services },
+  { path: '/dashboard', permission: 'dashboard:read', name: 'Dashboard', element: Dashboard },
+  { path: '/widgets', permission: 'widgets:read', name: 'Widgets', element: Widgets },
+  { path: '/sandbox', permission: 'sandbox:read', name: 'Sandbox', element: Sandbox },
+  {
+    path: '/appointments',
+    permission: 'appointments:read',
+    name: 'Appointments',
+    element: Appointments,
+  },
+  { path: '/schedule', permission: 'schedule:read', name: 'Schedule', element: Schedule },
+  { path: '/staff', permission: 'staff:read', name: 'Staff', element: Staff },
+  { path: '/clients', permission: 'clients:read', name: 'Clients', element: Clients },
+  { path: '/analytics', permission: 'analytics:read', name: 'Analytics', element: Analytics },
+  { path: '/settings', permission: 'settings:read', name: 'Settings', element: Settings },
+  { path: '/services', permission: 'services:read', name: 'Services', element: Services },
 
 
 
