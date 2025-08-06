@@ -17,6 +17,12 @@ const Register = React.lazy(() => import('./pages/register/Register'))
 const Page404 = React.lazy(() => import('./pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./pages/page500/Page500'))
 
+const loading = (
+  <div className="pt-3 text-center">
+    <CSpinner color="primary" variant="grow" />
+  </div>
+)
+
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
   const storedTheme = useSelector((state) => state.theme)
@@ -37,13 +43,7 @@ const App = () => {
 
   return (
     <HashRouter>
-      <Suspense
-        fallback={
-          <div className="pt-3 text-center">
-            <CSpinner color="primary" variant="grow" />
-          </div>
-        }
-      >
+      <Suspense fallback={loading}>
         <Routes>
           <Route exact path="/login" name="Login Page" element={<Login />} />
           <Route exact path="/register" name="Register Page" element={<Register />} />
