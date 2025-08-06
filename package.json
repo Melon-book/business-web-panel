@@ -16,7 +16,11 @@
     "build": "vite build",
     "lint": "eslint",
     "serve": "vite preview",
-    "start": "vite --open --force"
+    "start": "vite --open --force",
+    "release": "node scripts/createNewRelease.js",
+    "release:patch": "node scripts/createNewRelease.js patch",
+    "release:minor": "node scripts/createNewRelease.js minor",
+    "release:major": "node scripts/createNewRelease.js major"
   },
   "dependencies": {
     "@coreui/chartjs": "^4.1.0",
