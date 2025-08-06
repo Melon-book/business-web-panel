@@ -1,8 +1,9 @@
 import React from 'react'
 
-const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
+const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'))
+const ColorsXXX = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
+
 
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -49,13 +50,43 @@ const Badges = React.lazy(() => import('./views/notifications/badges/Badges'))
 const Modals = React.lazy(() => import('./views/notifications/modals/Modals'))
 const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 
-const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
+
+// Feature pages
+const Widgets = React.lazy(() => import('./features/widgets/pages/Widgets'))
+const Sandbox = React.lazy(() => import('./features/sandbox/pages/Sandbox'))
+const Appointments = React.lazy(() => import('./features/appointments/pages/Appointments'))
+const Schedule = React.lazy(() => import('./features/schedule/pages/ScheduleView'))
+const Staff = React.lazy(() => import('./features/staff/pages/StaffList'))
+const Clients = React.lazy(() => import('./features/clients/pages/ClientsList'))
+const Analytics = React.lazy(() => import('./features/analytics/pages/AnalyticsDashboard'))
+const Settings = React.lazy(() => import('./features/settings/pages/BusinessSettings'))
+const Services = React.lazy(() => import('./features/services/pages/ServicesList'))
+
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/theme', name: 'Theme', element: Colors, exact: true },
-  { path: '/theme/colors', name: 'Colors', element: Colors },
+  { path: '/dashboard', permission: 'dashboard:read', name: 'Dashboard', element: Dashboard },
+  { path: '/widgets', permission: 'widgets:read', name: 'Widgets', element: Widgets },
+  { path: '/sandbox', permission: 'sandbox:read', name: 'Sandbox', element: Sandbox },
+  {
+    path: '/appointments',
+    permission: 'appointments:read',
+    name: 'Appointments',
+    element: Appointments,
+  },
+  { path: '/schedule', permission: 'schedule:read', name: 'Schedule', element: Schedule },
+  { path: '/staff', permission: 'staff:read', name: 'Staff', element: Staff },
+  { path: '/clients', permission: 'clients:read', name: 'Clients', element: Clients },
+  { path: '/analytics', permission: 'analytics:read', name: 'Analytics', element: Analytics },
+  { path: '/settings', permission: 'settings:read', name: 'Settings', element: Settings },
+  { path: '/services', permission: 'services:read', name: 'Services', element: Services },
+
+
+
+
+
+  { path: '/theme', name: 'Theme', element: ColorsXXX, exact: true },
+  { path: '/theme/colors', name: 'Colors', element: ColorsXXX },
   { path: '/theme/typography', name: 'Typography', element: Typography },
   { path: '/base', name: 'Base', element: Cards, exact: true },
   { path: '/base/accordion', name: 'Accordion', element: Accordion },
@@ -96,7 +127,7 @@ const routes = [
   { path: '/notifications/badges', name: 'Badges', element: Badges },
   { path: '/notifications/modals', name: 'Modals', element: Modals },
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
-  { path: '/widgets', name: 'Widgets', element: Widgets },
+  // { path: '/widgets', name: 'Widgets', element: Widgets },
 ]
 
 export default routes

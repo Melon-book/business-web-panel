@@ -5,25 +5,34 @@ import { CContainer, CSpinner } from '@coreui/react'
 // routes config
 import routes from '../routes'
 
+const ProtectedRoute = ({ children, permission }) => {
+  return children
+}
+
 const AppContent = () => {
   return (
     <CContainer className="px-4" lg>
       <Suspense fallback={<CSpinner color="primary" />}>
         <Routes>
-          {routes.map((route, idx) => {
+          {routes.map(({ path, name, element: Element, permission, exact }, idx) => {
             return (
-              route.element && (
+              Element && (
                 <Route
                   key={idx}
-                  path={route.path}
-                  exact={route.exact}
-                  name={route.name}
-                  element={<route.element />}
+                  path={path}
+                  exact={exact}
+                  name={name}
+                  element={
+                    <ProtectedRoute permission={permission}>
+                      <Element />
+                    </ProtectedRoute>
+                  }
                 />
               )
             )
           })}
           <Route path="/" element={<Navigate to="dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
       </Suspense>
     </CContainer>
