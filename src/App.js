@@ -14,8 +14,9 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 // Pages
 const Login = React.lazy(() => import('./pages/login/Login'))
 const Register = React.lazy(() => import('./pages/register/Register'))
-const Page404 = React.lazy(() => import('./pages/page404/Page404'))
-const Page500 = React.lazy(() => import('./pages/page500/Page500'))
+const Page403 = React.lazy(() => import('./pages/error/page403/Page403'))
+const Page404 = React.lazy(() => import('./pages/error/page404/Page404'))
+const Page500 = React.lazy(() => import('./pages/error/page500/Page500'))
 
 const loading = (
   <div className="pt-3 text-center">
@@ -49,6 +50,7 @@ const App = () => {
         <Routes>
           <Route exact path="/login" name="Login Page" element={<Login />} />
           <Route exact path="/register" name="Register Page" element={<Register />} />
+          <Route exact path="/403" name="Page 404" element={<Page403 />} />
           <Route exact path="/404" name="Page 404" element={<Page404 />} />
           <Route exact path="/500" name="Page 500" element={<Page500 />} />
           <Route path="*" name="Home" element={<DefaultLayout />} />

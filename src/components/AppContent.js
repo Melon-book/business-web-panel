@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
-import ProtectedRoute from './ProtectedRoute'
+import ProtectedRoute from '../permissions/ProtectedRoute'
 
 // routes config
 import routes from '../routes'

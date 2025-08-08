@@ -20,9 +20,15 @@ import { cilLockLocked, cilUser } from '@coreui/icons'
 import { loginWithEmail } from '../../services/auth'
 import { useAuth } from '../../contexts/AuthContext'
 
+function randomIntFromInterval(min = 0, max = 2) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+const _email = ['sarah@urbancuts.com', 'alex@urbancuts.com', 'owner@urbancuts.com'][randomIntFromInterval()]
+
 const Login = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState(_email)
+  const [password, setPassword] = useState(_email)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
