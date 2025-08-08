@@ -8,6 +8,7 @@ import {
   CButton
 } from '@coreui/react'
 import { Link } from 'react-router-dom'
+import { logout } from '../../services/auth'
 
 const Dashboard = () => {
   return (
@@ -20,6 +21,11 @@ const Dashboard = () => {
             </CCardHeader>
             <CCardBody>
               Welcome to Melon Business Dashboard<br />
+
+
+              <CButton onClick={logout} color="primary">
+                logout
+              </CButton><br />
 
               <Link to="/dashboard">Dashboard</Link><br />
               <Link to="/appointments">appointments</Link><br />
