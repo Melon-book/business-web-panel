@@ -50,7 +50,7 @@ const hasPermission = (user, permission) => {
 
   const rolePermissions = {
     business_owner: ['dashboard', 'appointments', 'schedule', 'staff', 'clients', 'services', 'analytics', 'settings'],
-    employee: ['dashboard', 'appointments', 'schedule', 'clients'],
+    employee: ['dashboard', 'appointments', 'schedule', 'staff', 'clients'],
     client: ['dashboard'],
   }
 

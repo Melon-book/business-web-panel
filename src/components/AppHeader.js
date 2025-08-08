@@ -27,8 +27,10 @@ import {
 
 import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
+import { useAuth } from '../contexts/AuthContext'
 
 const AppHeader = () => {
+  const { user } = useAuth()
   const headerRef = useRef()
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
 
@@ -65,6 +67,9 @@ const AppHeader = () => {
           </CNavItem>
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
+          {/* =================== */}
+          <CNavItem>Welcome {user?.email}</CNavItem>
+          {/* =================== */}
           <CNavItem>
             <CNavLink href="#">
               <CIcon icon={cilBell} size="lg" />

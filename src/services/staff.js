@@ -1,5 +1,53 @@
 import supabase from '../lib/supabase'
 
+export const getAllStaff = async (businessId, filters = {}) => {
+  try {
+    console.log('Fetching staff with filters:', filters);
+    console.log('Business ID:', businessId);
+
+    let query = supabase
+      .from('employees')
+      .select(`
+        *,
+        primary_role:employee_role_templates(name, description),
+        location:business_locations(name, address_line1),
+        employee_services(
+          service_id,
+          custom_price,
+          is_primary,
+          service:services(name, duration, price)
+        )
+      `)
+      .eq('business_id', businessId)
+
+
+    if (filters.role) {
+      query = query.eq('role', filters.role)
+    }
+
+    if (filters.status !== undefined) {
+      query = query.eq('is_active', filters.status)
+    }
+
+    if (filters.search) {
+      query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+    }
+
+    if (filters.location_id) {
+      query = query.eq('location_id', filters.location_id)
+    }
+
+
+    const { data, error } = await query.order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error: error.message }
+  }
+}
+
 export const getBusinessStaff = async (businessId) => {
   try {
     const { data, error } = await supabase
@@ -177,8 +225,82 @@ export const deactivateStaffMember = async (staffId) => {
   }
 }
 
-export const updateWorkingHours = async (staffId, workingHours) => {
+export const bulkUpdateStaff = async (staffIds, updates) => {
   try {
+    const { data, error } = await supabase
+      .from('employees')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .in('id', staffIds)
+      .select()
+
+    if (error) throw error
+
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error: error.message }
+  }
+}
+
+export const getStaffStats = async (staffId) => {
+  try {
+    const { data: appointments, error: appointmentsError } = await supabase
+      .from('appointments')
+      .select('id, status, total_amount, appointment_date')
+      .eq('employee_id', staffId)
+
+    if (appointmentsError) throw appointmentsError
+
+    const { data: reviews, error: reviewsError } = await supabase
+      .from('reviews')
+      .select('rating')
+      .eq('employee_id', staffId)
+      .eq('status', 'approved')
+
+    if (reviewsError) throw reviewsError
+
+    const totalAppointments = appointments.length
+    const completedAppointments = appointments.filter(apt => apt.status === 'completed').length
+    const totalRevenue = appointments
+      .filter(apt => apt.status === 'completed')
+      .reduce((sum, apt) => sum + parseFloat(apt.total_amount || 0), 0)
+
+    const averageRating = reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+      : 0
+
+    const thisMonth = new Date()
+    thisMonth.setDate(1)
+    const thisMonthAppointments = appointments.filter(apt =>
+      new Date(apt.appointment_date) >= thisMonth
+    ).length
+
+    return {
+      data: {
+        totalAppointments,
+        completedAppointments,
+        totalRevenue,
+        averageRating: Math.round(averageRating * 10) / 10,
+        completionRate: totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0,
+        thisMonthAppointments,
+        totalReviews: reviews.length
+      },
+      error: null
+    }
+  } catch (error) {
+    return { data: null, error: error.message }
+  }
+}
+
+export const updateStaffSchedule = async (staffId, workingHours) => {
+  try {
+    const isValidSchedule = validateWorkingHours(workingHours)
+    if (!isValidSchedule.valid) {
+      throw new Error(isValidSchedule.error)
+    }
+
     const { data, error } = await supabase
       .from('employees')
       .update({
@@ -195,6 +317,51 @@ export const updateWorkingHours = async (staffId, workingHours) => {
   } catch (error) {
     return { data: null, error: error.message }
   }
+}
+
+export const toggleStaffStatus = async (staffId) => {
+  try {
+    const { data: currentData, error: fetchError } = await supabase
+      .from('employees')
+      .select('is_active')
+      .eq('id', staffId)
+      .single()
+
+    if (fetchError) throw fetchError
+
+    const newStatus = !currentData.is_active
+
+    if (!newStatus) {
+      const { error: appointmentsError } = await supabase
+        .from('appointments')
+        .update({ employee_id: null })
+        .eq('employee_id', staffId)
+        .gte('appointment_date', new Date().toISOString().split('T')[0])
+        .in('status', ['pending', 'confirmed'])
+
+      if (appointmentsError) throw appointmentsError
+    }
+
+    const { data, error } = await supabase
+      .from('employees')
+      .update({
+        is_active: newStatus,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', staffId)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error: error.message }
+  }
+}
+
+export const updateWorkingHours = async (staffId, workingHours) => {
+  return await updateStaffSchedule(staffId, workingHours)
 }
 
 export const assignServicesToEmployee = async (employeeId, services) => {
@@ -363,4 +530,33 @@ export const assignRoleToEmployee = async (employeeId, roleTemplateId, assignedB
   } catch (error) {
     return { data: null, error: error.message }
   }
+}
+
+const validateWorkingHours = (workingHours) => {
+  if (!workingHours || typeof workingHours !== 'object') {
+    return { valid: false, error: 'Working hours must be an object' }
+  }
+
+  const validDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+  for (const [day, schedule] of Object.entries(workingHours)) {
+    if (!validDays.includes(day.toLowerCase())) {
+      return { valid: false, error: `Invalid day: ${day}` }
+    }
+
+    if (schedule && typeof schedule === 'object') {
+      if (schedule.is_working && (!schedule.start_time || !schedule.end_time)) {
+        return { valid: false, error: `Missing start or end time for ${day}` }
+      }
+
+      if (schedule.start_time && schedule.end_time) {
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
+        if (!timeRegex.test(schedule.start_time) || !timeRegex.test(schedule.end_time)) {
+          return { valid: false, error: `Invalid time format for ${day}` }
+        }
+      }
+    }
+  }
+
+  return { valid: true }
 }
