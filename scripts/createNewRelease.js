@@ -246,7 +246,6 @@ class ReleaseManager {
 
       // Add files with explicit line ending handling
       this.exec('git add package.json', { silent: false })
-      this.exec('git add app.json', { silent: false })
 
       // Check if there are actually changes to commit
       const status = this.exec('git status --porcelain package.json app.json', { silent: true })
