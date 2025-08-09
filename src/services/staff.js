@@ -1,76 +1,26 @@
 import supabase from '../lib/supabase'
+import { createEmployeeAccount } from './auth'
 
 export const getAllStaff = async (businessId, filters = {}) => {
   try {
     console.log('Fetching staff with filters:', filters);
     console.log('Business ID:', businessId);
 
-    let query = supabase
-      .from('employees')
-      .select(`
-        *,
-        primary_role:employee_role_templates(name, description),
-        location:business_locations(name, address_line1),
-        employee_services(
-          service_id,
-          custom_price,
-          is_primary,
-          service:services(name, duration, price)
-        )
-      `)
-      .eq('business_id', businessId)
-
-
-    if (filters.role) {
-      query = query.eq('role', filters.role)
-    }
-
-    if (filters.status !== undefined) {
-      query = query.eq('is_active', filters.status)
-    }
-
-    if (filters.search) {
-      query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
-    }
-
-    if (filters.location_id) {
-      query = query.eq('location_id', filters.location_id)
-    }
-
-
-    const { data, error } = await query.order('created_at', { ascending: false })
-
-    if (error) throw error
-
-    return { data, error: null }
-  } catch (error) {
-    return { data: null, error: error.message }
-  }
-}
-
-export const getBusinessStaff = async (businessId) => {
-  try {
+    // Check if RLS is enabled and causing issues
     const { data, error } = await supabase
       .from('employees')
-      .select(`
-        *,
-        primary_role:employee_role_templates(name, description),
-        location:business_locations(name, address_line1),
-        employee_services(
-          service_id,
-          custom_price,
-          is_primary,
-          service:services(name, duration, price)
-        )
-      `)
+      .select('*')
       .eq('business_id', businessId)
       .order('created_at', { ascending: false })
 
+    console.log('Raw query result:', { data, error });
+
     if (error) throw error
 
-    return { data, error: null }
+    return { data: data || [], error: null }
   } catch (error) {
-    return { data: null, error: error.message }
+    console.error('Staff service error:', error);
+    return { data: [], error: error.message }
   }
 }
 
@@ -111,10 +61,25 @@ export const createStaffMember = async (businessId, staffData) => {
   try {
     const { services, ...employeeData } = staffData
 
+    let userId = null
+    let temporaryPassword = null
+
+    if (employeeData.can_login && employeeData.email) {
+      const { user, userData, temporaryPassword: tempPass, error: authError } = await createEmployeeAccount(employeeData)
+
+      if (authError) {
+        console.warn('Failed to create user account:', authError)
+      } else {
+        userId = user?.id
+        temporaryPassword = tempPass
+      }
+    }
+
     const { data: employee, error: employeeError } = await supabase
       .from('employees')
       .insert([{
         business_id: businessId,
+        user_id: userId,
         first_name: employeeData.first_name,
         last_name: employeeData.last_name,
         email: employeeData.email,
@@ -142,9 +107,13 @@ export const createStaffMember = async (businessId, staffData) => {
       if (servicesError) throw new Error(servicesError)
     }
 
-    return { data: employee, error: null }
+    return {
+      data: employee,
+      temporaryPassword,
+      error: null
+    }
   } catch (error) {
-    return { data: null, error: error.message }
+    return { data: null, temporaryPassword: null, error: error.message }
   }
 }
 
@@ -560,3 +529,31 @@ const validateWorkingHours = (workingHours) => {
 
   return { valid: true }
 }
+
+export const getBusinessStaff = async (businessId) => {
+  try {
+    const { data, error } = await supabase
+      .from('employees')
+      .select(`
+        *,
+        primary_role:employee_role_templates(name, description),
+        location:business_locations(name, address_line1),
+        employee_services(
+          service_id,
+          custom_price,
+          is_primary,
+          service:services(name, duration, price)
+        )
+      `)
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error: error.message }
+  }
+}
+
+

@@ -1,20 +1,51 @@
 import supabase from '../lib/supabase'
-import { business_type, roles } from '../constants/constants'
 
 export const loginWithEmail = async (email, password) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-  if (error) {
-    throw new Error(error.message)
+    if (error) throw error
+
+    return { user: data.user, session: data.session, error: null }
+  } catch (error) {
+    return { user: null, session: null, error: error.message }
   }
-
-  return data
 }
 
-export const signUpWithEmail = async (email, password, userData) => {
+export const logout = async () => {
+  try {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error: error.message }
+  }
+}
+
+export const getCurrentUser = async () => {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error) throw error
+    return { user, error: null }
+  } catch (error) {
+    return { user: null, error: error.message }
+  }
+}
+
+export const getCurrentSession = async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    if (error) throw error
+    return { session, error: null }
+  } catch (error) {
+    return { session: null, error: error.message }
+  }
+}
+
+export const registerWithEmail = async (email, password, userData) => {
   try {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -32,7 +63,6 @@ export const signUpWithEmail = async (email, password, userData) => {
   }
 }
 
-// TODO .. remove extra logic, like splitting, creating slug, etc.
 export const registerBusiness = async (businessName, email, password) => {
   try {
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -42,7 +72,7 @@ export const registerBusiness = async (businessName, email, password) => {
         data: {
           first_name: businessName.split(' ')[0] || businessName,
           last_name: businessName.split(' ').slice(1).join(' ') || 'Owner',
-          role: roles.business_owner,
+          role: 'business_owner'
         }
       }
     })
@@ -58,7 +88,7 @@ export const registerBusiness = async (businessName, email, password) => {
             email: email,
             first_name: businessName.split(' ')[0] || businessName,
             last_name: businessName.split(' ').slice(1).join(' ') || 'Owner',
-            role: roles.business_owner,
+            role: 'business_owner'
           }
         ])
         .select()
@@ -74,8 +104,8 @@ export const registerBusiness = async (businessName, email, password) => {
             owner_id: authData.user.id,
             name: businessName,
             slug: `${slug}-${Date.now()}`,
-            business_type: business_type.salon,
-            status: 'active',
+            business_type: 'salon',
+            status: 'active'
           }
         ])
         .select()
@@ -96,50 +126,64 @@ export const registerBusiness = async (businessName, email, password) => {
   }
 }
 
-export const logout = async () => {
-  const { error } = await supabase.auth.signOut()
-  if (error) {
-    throw new Error(error.message)
-  }
-  return { error: null }
-}
-
-export const getCurrentSession = async () => {
+export const createEmployeeAccount = async (employeeData, temporaryPassword = null) => {
   try {
-    const { data: { session }, error } = await supabase.auth.getSession()
-    if (error) throw error
-    return { session, error: null }
+    if (!employeeData.can_login) {
+      return { user: null, error: null }
+    }
+
+    const password = temporaryPassword || generateTemporaryPassword()
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: employeeData.email,
+      password: password,
+      options: {
+        data: {
+          first_name: employeeData.first_name,
+          last_name: employeeData.last_name,
+          role: 'employee'
+        }
+      }
+    })
+
+    if (authError) throw authError
+
+    if (authData.user) {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: authData.user.id,
+            email: employeeData.email,
+            first_name: employeeData.first_name,
+            last_name: employeeData.last_name,
+            phone: employeeData.phone,
+            role: 'employee'
+          }
+        ])
+        .select()
+
+      if (userError) throw userError
+
+      return {
+        user: authData.user,
+        userData: userData[0],
+        temporaryPassword: password,
+        error: null
+      }
+    }
+
+    return { user: null, userData: null, temporaryPassword: null, error: 'Account creation failed' }
   } catch (error) {
-    return { session: null, error: error.message }
+    return { user: null, userData: null, temporaryPassword: null, error: error.message }
   }
 }
 
-export const getCurrentUser = async () => {
-  const { data: { user }, error } = await supabase.auth.getUser()
-
-  if (error) {
-    throw new Error(error.message)
+const generateTemporaryPassword = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let password = ''
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length))
   }
-
-  return user
-}
-
-export const resetPassword = async (email) => {
-  const { error } = await supabase.auth.resetPasswordForEmail(email)
-
-  if (error) {
-    throw new Error(error.message)
-  }
-}
-
-export const updatePassword = async (password) => {
-  const { data, error } = await supabase.auth.updateUser({
-    password: password
-  })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
+  return password
 }

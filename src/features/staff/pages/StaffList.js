@@ -24,24 +24,19 @@ import {
   CDropdownItem,
   CSpinner,
   CAlert,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalBody,
-  CModalFooter,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
   cilSearch,
   cilPlus,
   cilPencil,
+  // cilEyedropper,
   cilEyedropper,
-  // cilEye,
   cilUserFollow,
   cilUserUnfollow,
   cilOptions,
 } from '@coreui/icons'
-import { getAllStaff } from '../../../services/staff'
+import { getAllStaff, toggleStaffStatus } from '../../../services/staff'
 import StaffModal from '../components/StaffModal'
 
 const StaffList = () => {
@@ -50,13 +45,14 @@ const StaffList = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showModal, setShowModal] = useState(false)
-  const [selectedStaff, setSelectedStaff] = useState([])
+  const [selectedStaff, setSelectedStaff] = useState(null)
+  const [modalMode, setModalMode] = useState('create') // 'create' or 'edit'
 
   const [filters, setFilters] = useState({
     search: '',
     // role: 'all',
     // status: 'all',
-    // location: 'all',
+    // location: 'all'
   })
 
   const businessId = '768191b7-4414-4cc2-94a8-77b2950f1f94'
@@ -81,8 +77,54 @@ const StaffList = () => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }
 
+  const handleAddStaff = () => {
+    setSelectedStaff(null)
+    setModalMode('create')
+    setShowModal(true)
+  }
+
+  const handleEditStaff = (staffMember) => {
+    setSelectedStaff(staffMember)
+    setModalMode('edit')
+    setShowModal(true)
+  }
+
   const handleToggleStatus = async (staffId, currentStatus) => {
-    console.log('Toggle status for:', staffId, !currentStatus)
+    try {
+      const { data, error } = await toggleStaffStatus(staffId)
+      if (error) {
+        setError(error)
+      } else {
+        // Update the staff list with the new status
+        setStaff(prev => prev.map(member =>
+          member.id === staffId
+            ? { ...member, is_active: data.is_active }
+            : member
+        ))
+      }
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const handleModalSuccess = (staffData) => {
+    if (modalMode === 'create') {
+      // Add new staff member to the list
+      setStaff(prev => [staffData, ...prev])
+    } else {
+      // Update existing staff member in the list
+      setStaff(prev => prev.map(member =>
+        member.id === staffData.id ? staffData : member
+      ))
+    }
+    setShowModal(false)
+    setSelectedStaff(null)
+  }
+
+  const handleModalClose = () => {
+    setShowModal(false)
+    setSelectedStaff(null)
+    setModalMode('create')
   }
 
   const getStatusBadge = (isActive) => {
@@ -150,7 +192,7 @@ const StaffList = () => {
       <CCol md={2} className="text-end">
         <CButton
           color="primary"
-          onClick={() => setShowModal(true)}
+          onClick={handleAddStaff}
         >
           <CIcon icon={cilPlus} className="me-1" />
           Add Staff
@@ -240,7 +282,7 @@ const StaffList = () => {
                 <CIcon icon={cilEyedropper} className="me-2" />
                 View Details
               </CDropdownItem>
-              <CDropdownItem href={`#/staff/${member.id}/edit`}>
+              <CDropdownItem onClick={() => handleEditStaff(member)}>
                 <CIcon icon={cilPencil} className="me-2" />
                 Edit
               </CDropdownItem>
@@ -259,31 +301,6 @@ const StaffList = () => {
       </CTableRow>
     ))
   }
-
-  const AddStaffModal = () => (
-    <CModal visible={showModal} onClose={() => setShowModal(false)} size="lg">
-      <CModalHeader>
-        <CModalTitle>Add New Staff Member</CModalTitle>
-      </CModalHeader>
-      <CModalBody>
-        <StaffModal
-          visible={showModal}
-          businessId={businessId}
-          onClose={() => setShowModal(false)}
-          onSuccess={loadStaff}
-          staffMember={null}
-        />
-      </CModalBody>
-      <CModalFooter>
-        <CButton color="secondary" onClick={() => setShowModal(false)}>
-          Cancel
-        </CButton>
-        <CButton color="primary">
-          Save Staff Member
-        </CButton>
-      </CModalFooter>
-    </CModal>
-  )
 
   return (
     <>
@@ -329,7 +346,13 @@ const StaffList = () => {
         </CCol>
       </CRow>
 
-      <AddStaffModal />
+      <StaffModal
+        visible={showModal}
+        onClose={handleModalClose}
+        staffMember={selectedStaff}
+        businessId={businessId}
+        onSuccess={handleModalSuccess}
+      />
     </>
   )
 }

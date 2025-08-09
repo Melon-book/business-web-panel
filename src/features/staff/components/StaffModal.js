@@ -187,11 +187,17 @@ const StaffModal = ({
       if (result.error) {
         setError(result.error)
       } else {
-        setSuccess(`Staff member ${isEditMode ? 'updated' : 'created'} successfully!`)
+        let successMessage = `Staff member ${isEditMode ? 'updated' : 'created'} successfully!`
+
+        if (!isEditMode && result.temporaryPassword) {
+          successMessage += ` Temporary password: ${result.temporaryPassword}`
+        }
+
+        setSuccess(successMessage)
         setTimeout(() => {
           onSuccess?.(result.data)
           onClose()
-        }, 1500)
+        }, 3000)
       }
     } catch (err) {
       setError(err.message || 'An unexpected error occurred')
