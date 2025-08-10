@@ -1,18 +1,10 @@
-import { legacy_createStore as createStore } from 'redux'
+import { legacy_createStore as createStore, combineReducers } from 'redux'
+import uiReducer from './uiSlice'
 
-const initialState = {
-  sidebarShow: true,
-  theme: 'light',
-}
+const rootReducer = combineReducers({
+  ui: uiReducer,
+})
 
-const changeState = (state = initialState, { type, ...rest }) => {
-  switch (type) {
-    case 'set':
-      return { ...state, ...rest }
-    default:
-      return state
-  }
-}
+const store = createStore(rootReducer)
 
-const store = createStore(changeState)
 export default store
