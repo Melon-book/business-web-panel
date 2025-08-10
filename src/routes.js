@@ -9,10 +9,12 @@ const Clients = React.lazy(() => import('./features/clients/pages/ClientsList'))
 const Analytics = React.lazy(() => import('./features/analytics/pages/AnalyticsDashboard'))
 const Settings = React.lazy(() => import('./features/settings/pages/BusinessSettings'))
 const Services = React.lazy(() => import('./features/services/pages/ServicesList'))
+const Page403 = React.lazy(() => import('./pages/error/Page403'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', permission: 'dashboard:read', name: 'Dashboard', element: Dashboard },
+  { path: '/error/403', name: 'Access Denied', element: Page403 },
   { path: '/sandbox', permission: 'sandbox:read', name: 'Sandbox', element: Sandbox },
   {
     path: '/appointments',

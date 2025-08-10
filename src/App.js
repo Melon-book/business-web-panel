@@ -14,8 +14,8 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 // Pages
 const Login = React.lazy(() => import('./pages/login/Login'))
 const Register = React.lazy(() => import('./pages/register/Register'))
-const Page404 = React.lazy(() => import('./pages/page404/Page404'))
-const Page500 = React.lazy(() => import('./pages/page500/Page500'))
+const Page404 = React.lazy(() => import('./pages/error/Page404'))
+const Page500 = React.lazy(() => import('./pages/error/Page500'))
 
 const loading = (
   <div className="pt-3 text-center">
